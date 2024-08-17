@@ -35,3 +35,23 @@ class JsonFileHandler:
                 json.dump(current_data, file, indent=4)
         except Exception as e:
             print(f"An error occurred while writing to the file: {e}")
+
+    def update_atlete(self, athlete):
+        try:
+            # Read the current data
+            current_data = self.read_json()
+            if not isinstance(current_data, list):
+                # THIS SHOULD NEVER HAPPENS BUT JUST IN CASE
+                current_data = [current_data]
+            
+            # Update the athlete
+            for i, a in enumerate(current_data):
+                if a['discordID'] == athlete['discordID']:
+                    current_data[i] = athlete
+                    break
+            
+            # Write the updated data back to the file
+            with open(self.file_path, 'w') as file:
+                json.dump(current_data, file, indent=4)
+        except Exception as e:
+            print(f"An error occurred while updating the athlete: {e}")
