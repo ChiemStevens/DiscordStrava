@@ -69,6 +69,17 @@ class StravaConnector:
         print(response.json())
 
         return response.json()
+    
+    def unauthorized_request(self, athlete):
+        url = "https://www.strava.com/oauth/deauthorize"
+        headers = {
+            'Authorization': f'Bearer {athlete["access_token"]}'
+        }
+
+        response = requests.post(url, headers=headers)
+
+        print(response.json())
+        return response.json()
 
     # Get all the activities of the athlete
     def get_activities(self, athlete):

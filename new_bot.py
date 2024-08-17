@@ -90,4 +90,17 @@ async def get_activities(ctx):
         
         await ctx.send(message)
 
+@bot.command()
+async def unauthenticate(ctx, member: discord.Member):
+    """Unauthenticate the user"""
+    athletes = file_handler.read_json()
+    for athlete in athletes:
+        if athlete['discordID'] == member.id:
+            file_handler.remove_athlete(athlete)
+            #strava_connector.unauthorized_request(athlete)
+            await ctx.send('You have been unauthenticated')
+            return
+
+    await ctx.send('You are not authenticated')
+
 bot.run(TOKEN)
