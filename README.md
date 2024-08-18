@@ -1,7 +1,7 @@
 # Chant discord strava bot
 
 ## Description
-This project links discord a discord bot to the strava API. Personal use only. 
+This project links a discord bot to the strava API. Personal use only. 
 
 ## Installation
 1. Clone the repository:
