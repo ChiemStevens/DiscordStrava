@@ -97,7 +97,7 @@ async def unauthenticate(ctx, member: discord.Member):
     for athlete in athletes:
         if athlete['discordID'] == member.id:
             file_handler.remove_athlete(athlete)
-            #strava_connector.unauthorized_request(athlete)
+            strava_connector.unauthorized_request(athlete)
             await ctx.send('You have been unauthenticated')
             return
 
