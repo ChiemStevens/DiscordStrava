@@ -12,7 +12,7 @@ This project links a discord bot to the strava API. Personal use only.
     ```sh
     cd DiscordStrava
     ```
-3. Create a virtual environment:
+3. Create a virtual environment (can use anaconda aswell):
     ```sh
     python -m venv .venv
 4. Activate the virtual environment:
