@@ -3,7 +3,6 @@ import os
 import typing
 import discord
 import json
-from discord.ext import commands
 from datetime import datetime, timedelta
 import asyncio
 from dotenv import load_dotenv
@@ -22,7 +21,8 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='!', description="Strava bot", intents=intents)
+bot = discord.Bot(debug_guilds=[1274345035105570826])
+# bot = commands.Bot(command_prefix='!', description="Strava bot", intents=intents)
 
 strava_connector = StravaConnector()
 file_handler = JsonFileHandler('runners.json')
@@ -56,27 +56,24 @@ async def run_blocking(blocking_func: typing.Callable, *args, **kwargs) -> typin
     func = functools.partial(blocking_func, *args, **kwargs) # `run_in_executor` doesn't support kwargs, `functools.partial` does
     return await bot.loop.run_in_executor(None, func)
 
-@bot.command()
-async def strava(ctx, member: discord.Member):
-    """Start the strava part"""
+@bot.command(description="Authenticate")
+async def authenticate(ctx, member: discord.Member):
     runners = file_handler.read_json()
     for runner in runners:
         if runner['discordID'] == member.id:
-            await ctx.send('You have already connected to Strava')
+            await ctx.respond('You have already connected to Strava')
             return
         
-    await ctx.send(f'Please autenticate using the following link:')
-    # We can put put the approval prompt to auto later to make sure that someone who is already authenticated won't have to reauthenticate on the page.
+    # We can put the approval prompt to auto later to make sure that someone who is already authenticated won't have to reauthenticate on the page.
+    await ctx.respond(f"Please autenticate using the following link: \n http://www.strava.com/oauth/authorize?client_id={strava_connector.client_id}&response_type=code&redirect_uri={REDIRECT_URI}?user={member.name}&approval_prompt=auto&scope=activity:read \n You have 2 minutes to authenticate")
     print(REDIRECT_URI)
-    await ctx.send(f'http://www.strava.com/oauth/authorize?client_id={strava_connector.client_id}&response_type=code&redirect_uri={REDIRECT_URI}?user={member.name}&approval_prompt=auto&scope=activity:read')
-    await ctx.send(f'You have 2 minutes to authenticate')
+    
     result = await run_blocking(blocking_function_authenticate, member.name, member.id)
     print(result)
     if result == 0:
         await ctx.send('Authentication failed')
     else:
         await ctx.send('You have been authenticated')
-
 
 @bot.command()
 async def get_activities(ctx):
@@ -102,5 +99,17 @@ async def unauthenticate(ctx, member: discord.Member):
             return
 
     await ctx.send('You are not authenticated')
+
+@bot.command(description="Make subscribe call")
+async def subscribe(ctx):
+    response = strava_connector.create_subscription()
+    await ctx.respond(response)
+
+@bot.command(description="Make unsubscribe call")
+async def unsubscribe(ctx):
+    if strava_connector.cancel_subscription():
+        await ctx.respond("succesfully unsubscribed")
+    else:
+        await ctx.respond("Failed!!!!!!!!!!!!!!!!!!!")
 
 bot.run(TOKEN)

@@ -11,6 +11,7 @@ class StravaConnector:
         self.client_id = os.getenv('STRAVA_CLIENT_ID')
         self.client_secret = os.getenv('STRAVA_CLIENT_SECRET')
         self.refresh_token = os.getenv('STRAVA_REFRESH_TOKEN')
+        self.callback_url = os.getenv('REDIRECT_URI')
         self.update_refresh_tokens()
     
     # Update the refresh token of all the athletes
@@ -70,6 +71,13 @@ class StravaConnector:
 
         return response.json()
     
+    def get_authenticated_users(self, athlete):
+        url = "https://www.strava.com/api/v3/athlete"
+        
+
+        response = requests.get(url)
+        return response
+    
     def unauthorized_request(self, athlete):
         url = "https://www.strava.com/oauth/deauthorize"
         headers = {
@@ -93,3 +101,30 @@ class StravaConnector:
 
         response = requests.get(url, headers=headers)
         return response.json()
+    
+    def create_subscription(self):
+        url = "https://www.strava.com/api/v3/push_subscriptions"
+        data = {
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'callback_url': self.callback_url + "webhook",
+            'verify_token': 'Chantanieke + ballorsten'
+        }
+        print(data)
+
+        response = requests.post(url, data=data)
+
+        self.subscription_id = response.json()['id']
+
+        return response.json()
+
+    def cancel_subscription(self):
+        url = f"https://www.strava.com/api/v3/push_subscriptions/{self.subscription_id}"
+        params = {'client_id': self.client_id, 'client_secret': self.client_secret}
+
+        response = requests.delete(url=url, params=params)
+        print(response)
+        if response.status_code == 204:
+            return True
+        else:
+            return False
