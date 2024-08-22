@@ -12,6 +12,7 @@ import time
 import requests
 from strava import StravaConnector
 from file_reader import JsonFileHandler
+from backend_ping_cog import BackendPingCog
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
@@ -23,6 +24,8 @@ intents.message_content = True
 
 bot = discord.Bot(debug_guilds=[1274345035105570826])
 # bot = commands.Bot(command_prefix='!', description="Strava bot", intents=intents)
+
+bot.add_cog(BackendPingCog(bot))
 
 strava_connector = StravaConnector()
 file_handler = JsonFileHandler('runners.json')
