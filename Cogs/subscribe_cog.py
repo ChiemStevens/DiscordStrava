@@ -1,7 +1,8 @@
 from discord.ext import tasks, commands
+from strava import StravaConnector
 
 class SubscribeCog(commands.Cog):
-    def __init__(self, bot, stravaConnector) -> None:
+    def __init__(self, bot, stravaConnector: StravaConnector) -> None:
         self.bot = bot
         self.stravaConnector = stravaConnector
 

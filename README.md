@@ -22,10 +22,7 @@ This project links a discord bot to the strava API. Personal use only.
     ```sh
     pip install -r requirements.txt
     ```
-6. Create the file runners.json with the following command
-    ```sh
-    echo [] > runners.json
-    ```
+6. Create the file runners.json and add empty array
 
 ## Usage
 Provide examples of how to use the project. For example:
