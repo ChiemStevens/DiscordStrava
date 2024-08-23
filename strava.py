@@ -102,24 +102,39 @@ class StravaConnector:
         response = requests.get(url, headers=headers)
         return response.json()
     
-    def create_subscription(self):
-        url = "https://www.strava.com/api/v3/push_subscriptions"
-        data = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'callback_url': self.callback_url + "webhook",
-            'verify_token': 'Chantanieke + ballorsten'
-        }
-        print(data)
+    def check_and_create_subscription(self):
 
-        response = requests.post(url, data=data)
+        exists, id = self.get_subscription()
 
-        self.subscription_id = response.json()['id']
+        if exists:
+            self.subscription_id = id
+            return exists, id
+        else:
+            url = "https://www.strava.com/api/v3/push_subscriptions"
+            data = {
+                'client_id': self.client_id,
+                'client_secret': self.client_secret,
+                'callback_url': self.callback_url + "webhook",
+                'verify_token': 'Chantanieke + ballorsten'
+            }
 
-        return response.json()
+            response = requests.post(url, data=data)
 
-    def cancel_subscription(self):
-        url = f"https://www.strava.com/api/v3/push_subscriptions/{self.subscription_id}"
+            if response.status_code == 201:
+                self.subscription_id = response.json()['id']
+                print("Set subscription id")
+            else: 
+                print(response.json())
+
+            return exists, self.subscription_id
+
+    def cancel_subscription(self, id = None):
+        if id is None:
+            if self.subscription_id is None:
+                return False
+            url = f"https://www.strava.com/api/v3/push_subscriptions/{self.subscription_id}"
+        else:
+            url = f"https://www.strava.com/api/v3/push_subscriptions/{id}"
         params = {'client_id': self.client_id, 'client_secret': self.client_secret}
 
         response = requests.delete(url=url, params=params)
@@ -128,3 +143,14 @@ class StravaConnector:
             return True
         else:
             return False
+        
+    def get_subscription(self):
+        url = "https://www.strava.com/api/v3/push_subscriptions"
+        params = {'client_id': self.client_id, 'client_secret': self.client_secret}
+
+        response = requests.get(url, params=params)
+
+        if not response.json():
+            return False, None
+        else:
+            return True, response.json()[0]['id']

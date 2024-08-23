@@ -10,9 +10,10 @@ import random
 import threading
 import time
 import requests
+from Cogs.subscribe_cog import SubscribeCog
 from strava import StravaConnector
 from file_reader import JsonFileHandler
-from backend_ping_cog import BackendPingCog
+from Cogs.backend_ping_cog import BackendPingCog
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
@@ -22,13 +23,13 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = discord.Bot(debug_guilds=[1274345035105570826])
-# bot = commands.Bot(command_prefix='!', description="Strava bot", intents=intents)
-
-bot.add_cog(BackendPingCog(bot))
+bot = discord.Bot(debug_guilds=[1274345035105570826], description="Strava bot", intents=intents)
 
 strava_connector = StravaConnector()
 file_handler = JsonFileHandler('runners.json')
+
+bot.add_cog(BackendPingCog(bot))
+bot.add_cog(SubscribeCog(bot, strava_connector))
 
 @bot.event
 async def on_ready():
@@ -103,16 +104,30 @@ async def unauthenticate(ctx, member: discord.Member):
 
     await ctx.send('You are not authenticated')
 
+
 @bot.command(description="Make subscribe call")
 async def subscribe(ctx):
-    response = strava_connector.create_subscription()
-    await ctx.respond(response)
-
+    exists, id = strava_connector.check_and_create_subscription()
+    await ctx.respond(f"new Sub creation: {not exists}, id: {id}")
+    
 @bot.command(description="Make unsubscribe call")
 async def unsubscribe(ctx):
     if strava_connector.cancel_subscription():
         await ctx.respond("succesfully unsubscribed")
     else:
         await ctx.respond("Failed!!!!!!!!!!!!!!!!!!!")
+
+@bot.command(description="Make unsubscribe call with an id")
+async def unsubscribe_id(ctx, id):
+    if strava_connector.cancel_subscription(id):
+        await ctx.respond("succesfully unsubscribed")
+    else:
+        await ctx.respond("Failed!!!!!!!!!!!!!!!!!!!")
+
+@bot.command(description="Make unsubscribe call with an id")
+async def get_sub(ctx):
+    exists, id = strava_connector.get_subscription()
+    await ctx.respond(f"sub exists: {exists}, id: {id}")
+
 
 bot.run(TOKEN)
